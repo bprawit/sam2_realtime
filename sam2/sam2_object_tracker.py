@@ -53,6 +53,23 @@ class SAM2ObjectTracker(SAM2Base):
         self.memory_bank_obj_score_threshold = memory_bank_obj_score_threshold
         self.memory_bank_kf_score_threshold = memory_bank_kf_score_threshold
 
+    def reset_tracker_state(self):
+        """
+        Clears the internal tracking state so we can track a new object (or new scene)
+        without recreating the entire model and reloading weights.
+        """
+        # Clear any per-object or per-sequence states
+        self.kf_mean.clear()
+        self.kf_covariance.clear()
+        self.stable_frames.clear()
+
+        # Clear stored frames
+        self.past_frames['short_term'].clear()
+        self.past_frames['long_term'].clear()
+        
+        # Reset current object index
+        self.curr_obj_idx = 0
+
     def update_kalman_filter(self,
                              obj: int,
                              ious: torch.Tensor,
